@@ -1,15 +1,22 @@
 import sys
 import sqlite3
 import csv_to_sqlite
+import matplotlib.pyplot as plt
 
-#Todo:
-#.csv to .sqlite
+#Todo: .csv to .sqlite
 def convertToSqlite( filename ):
     csv_name = filename + ".csv"
     options = csv_to_sqlite.CsvOptions(typing_style="full", encoding="windows-1250")
     input_files = [csv_name]  # pto_ass in a list of CSV files
     csv_to_sqlite.write_csv(input_files, filename+".sqlite", options)
     return filename + ".sqlite"
+
+# Todo: Differences diagram
+def showDifference( result ):
+    # 紅色破折號--, 藍色方塊bs ，綠色三角塊g^
+    # plt.plot(x, x, 'r--', x, x ** 2, 'bs', x, x ** 3, 'g^')
+    plt.show()
+    return 0;
 
 if __name__ == '__main__':
     print('Welcome to SQLiteHelper!')
@@ -30,14 +37,27 @@ if __name__ == '__main__':
     cursor_answer.execute(CMD_ATTACH_RESULT, (db_result,))
 
     # Sum-up different rows from selection
-    CMD_SELECT_DIFF = "SELECT ret.image_name FROM vmc_result.change_cd_idx ret, answer ans " \
+    CMD_SELECT_DIFF = "SELECT ret.image_name, ret.change_feature, ans.change_feature " \
+                      "FROM vmc_result.change_cd_idx ret, answer ans " \
                       "WHERE ret.image_name = ans.image_name " \
                       "and ret.change_feature!=ans.change_feature " \
                       "and ((ret.change_feature&1)|(ans.change_feature&1))"
     cursor_answer.execute(CMD_SELECT_DIFF)
-    print(cursor_answer.fetchall())
+    ret_diff = cursor_answer.fetchall()
+    print(ret_diff)
 
-    # Todo: Difference Diagram
+    # Todo: Differences
+    CMD_GET_COUNT = "SELECT ret.image_name, ret.change_feature, ans.change_feature " \
+                    "FROM vmc_result.change_cd_idx ret, answer ans " \
+                    "WHERE ret.image_name = ans.image_name "
+    cursor_answer.execute(CMD_GET_COUNT)
+    ret_total = cursor_answer.fetchall()
+
+    total = len(ret_total);
+    diff = len(ret_diff);
+    print("Total: ?, diff: ?", (total, diff))
+
+    # Todo: Download(wget) different results
 
     # Command
     # CMD_TABLE = "SELECT name FROM sqlite_master WHERE type='table';"
